@@ -38,12 +38,12 @@ class ChoiceTypeTest extends BaseTypeTest
         'n/a' => null,
     );
 
-    private $numericChoicesFlipped = array(
-        0 => 'Bernhard',
-        1 => 'Fabien',
-        2 => 'Kris',
-        3 => 'Jon',
-        4 => 'Roman',
+    private $numericChoices = array(
+        'Bernhard' => 0,
+        'Fabien' => 1,
+        'Kris' => 2,
+        'Jon' => 3,
+        'Roman' => 4,
     );
 
     private $objectChoices;
@@ -1365,6 +1365,18 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertNull($form[2]->getViewData());
         $this->assertNull($form[3]->getViewData());
         $this->assertNull($form[4]->getViewData());
+    }
+
+    public function testSubmitMultipleChoicesInts()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, null, array(
+            'multiple' => true,
+            'choices' => $this->numericChoices
+        ));
+
+        $form->submit(array(1, 2));
+
+        $this->assertTrue($form->isSynchronized());
     }
 
     public function testSingleSelectedObjectChoices()
