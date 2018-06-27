@@ -11,14 +11,32 @@
 
 namespace Symfony\Component\Cache\Tests\Simple;
 
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\Cache\Simple\RedisCache;
 
 class RedisCacheTest extends AbstractRedisCacheTest
 {
+    /**
+    * @var CacheInterface
+    */
+    protected $failingCache;
+
+
     public static function setupBeforeClass()
     {
         parent::setupBeforeClass();
         self::$redis = RedisCache::createConnection('redis://'.getenv('REDIS_HOST'));
+    }
+
+    public function createFailingSimpleCache()
+    {
+        return new RedisCache(new \Redis());
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+        $this->failingCache = $this->createFailingSimpleCache();
     }
 
     public function testCreateConnection()
@@ -78,5 +96,16 @@ class RedisCacheTest extends AbstractRedisCacheTest
             array('foo://localhost'),
             array('redis://'),
         );
+    }
+
+    public function testSetFailure()
+    {
+        if (isset($this->skippedTests[__FUNCTION__])) {
+            $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
+        }
+
+        $result = $this->failingCache->set('key', 'value');
+        $this->assertFalse($result, 'set() must return false if failure');
+        $this->assertNull($this->cache->get('key'), 'Value should not be set after failure');
     }
 }
